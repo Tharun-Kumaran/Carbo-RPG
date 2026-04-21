@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CARBON RPG — The Ephemeral Ecosystem</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<style>
+  :root{--bg-deep:#0a0f0d;--bg-mid:#111a14;--bg-card:#162018;--bg-card2:#1a2a1e;--border:#2a3d2e;--border-glow:#3d6645;--text-primary:#d4e8d0;--text-secondary:#7a9e80;--text-muted:#4a6650;--accent-green:#4eca6e;--accent-gold:#d4a843;--accent-blue:#4ab8ca;--accent-red:#ca5a4e;--accent-purple:#9b72ca;--glow-green:rgba(78,202,110,0.15);--glow-gold:rgba(212,168,67,0.15);}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:100%;height:100%;background:#0a0f0d;overflow:hidden;}
+  #root{width:100%;height:100%;}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  @keyframes spin-slow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  @keyframes spin-turbine{from{transform-origin:center;transform:rotate(0deg)}to{transform-origin:center;transform:rotate(360deg)}}
+  @keyframes bloom{0%{transform:scale(0) rotate(-20deg);opacity:0}60%{transform:scale(1.2) rotate(5deg)}100%{transform:scale(1) rotate(0deg);opacity:1}}
+  @keyframes stream-flow{0%{stroke-dashoffset:200}100%{stroke-dashoffset:0}}
+  @keyframes mote-rise{0%{transform:translateY(0) scale(1);opacity:0.9}100%{transform:translateY(-40px) scale(0);opacity:0}}
+  @keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes shimmer{0%{background-position:200% center}100%{background-position:-200% center}}
+  @keyframes debt-pulse{0%,100%{opacity:0.18}50%{opacity:0.32}}
+  @keyframes toast-in{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+  @keyframes ripple{0%{transform:scale(0);opacity:0.6}100%{transform:scale(3);opacity:0}}
+  @keyframes blink-star{0%,100%{opacity:0.3;transform:scale(0.8)}50%{opacity:1;transform:scale(1.2)}}
+  @keyframes scan-line{0%{top:0%}100%{top:100%}}
+  @keyframes analyzing-move{0%{width:5%}70%{width:85%}100%{width:100%}}
+  @keyframes qr-pulse{0%,100%{box-shadow:0 0 0 0 rgba(78,202,110,0.35)}50%{box-shadow:0 0 0 10px rgba(78,202,110,0)}}
+  .app-shell{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;background:var(--bg-deep);position:relative;overflow:hidden;font-family:'Lato',sans-serif;}
+  .header{padding:12px 16px 8px;background:linear-gradient(180deg,rgba(10,15,13,0.98) 0%,rgba(10,15,13,0.9) 100%);border-bottom:1px solid var(--border);backdrop-filter:blur(10px);flex-shrink:0;z-index:10;}
+  .header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .header-title{font-family:'Cinzel',serif;font-size:11px;letter-spacing:3px;color:var(--text-muted);text-transform:uppercase;}
+  .header-meta{display:flex;align-items:center;gap:10px;}
+  .streak-badge{font-size:12px;font-weight:700;color:var(--accent-gold);display:flex;align-items:center;gap:3px;background:rgba(212,168,67,0.12);padding:3px 8px;border-radius:20px;border:1px solid rgba(212,168,67,0.25);}
+  .karma-badge{font-size:12px;font-weight:700;color:var(--accent-purple);display:flex;align-items:center;gap:3px;background:rgba(155,114,202,0.12);padding:3px 8px;border-radius:20px;border:1px solid rgba(155,114,202,0.25);}
+  .scan-btn{background:rgba(78,202,110,0.12);border:1px solid rgba(78,202,110,0.3);color:var(--accent-green);padding:4px 10px;border-radius:20px;font-size:11px;cursor:pointer;font-family:'Lato',sans-serif;transition:all 0.2s;}
+  .scan-btn:hover{background:rgba(78,202,110,0.22);}
+  .xp-bar-wrap{display:flex;align-items:center;gap:8px;}
+  .level-badge{font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:var(--accent-green);white-space:nowrap;background:var(--glow-green);padding:2px 8px;border-radius:4px;border:1px solid rgba(78,202,110,0.3);}
+  .xp-bar-bg{flex:1;height:6px;background:#1a2a1e;border-radius:3px;overflow:hidden;}
+  .xp-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#2a8c4e,#4eca6e,#8aeea8);background-size:200% 100%;animation:shimmer 2s linear infinite;transition:width 0.8s cubic-bezier(.34,1.56,.64,1);}
+  .xp-label{font-size:10px;color:var(--text-muted);white-space:nowrap;}
+  .tab-content{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:70px;}
+  .tab-content::-webkit-scrollbar{width:3px;}
+  .tab-content::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+  .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(10,15,13,0.97);border-top:1px solid var(--border);display:flex;backdrop-filter:blur(20px);z-index:20;}
+  .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px 14px;cursor:pointer;border:none;background:none;color:var(--text-muted);font-family:'Lato',sans-serif;transition:all 0.25s;position:relative;}
+  .nav-btn.active{color:var(--accent-green);}
+  .nav-btn.active::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:40px;height:2px;background:var(--accent-green);border-radius:2px 2px 0 0;box-shadow:0 0 8px var(--accent-green);}
+  .nav-btn span:first-child{font-size:20px;margin-bottom:2px;}
+  .nav-btn span:last-child{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;}
+  .ecosystem-wrap{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;}
+  .eco-svg{width:100%;height:100%;}
+  .eco-score-overlay{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(10,15,13,0.8);border:1px solid var(--border-glow);border-radius:20px;padding:4px 16px;font-family:'Cinzel',serif;font-size:11px;color:var(--accent-green);letter-spacing:2px;backdrop-filter:blur(8px);display:flex;align-items:center;gap:8px;}
+  .eco-state-name{color:var(--text-muted);font-size:9px;letter-spacing:3px;}
+  .home-section{padding:16px;}
+  .section-title{font-family:'Cinzel',serif;font-size:10px;letter-spacing:3px;color:var(--text-muted);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+  .stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:14px 12px;display:flex;flex-direction:column;gap:6px;transition:all 0.3s;}
+  .stat-card:hover{border-color:var(--border-glow);}
+  .stat-header{display:flex;align-items:center;justify-content:space-between;}
+  .stat-name{font-size:10px;letter-spacing:2px;color:var(--text-muted);text-transform:uppercase;}
+  .stat-icon{font-size:16px;}
+  .stat-value{font-family:'Cinzel',serif;font-size:22px;font-weight:700;}
+  .stat-bar-bg{height:4px;background:#1a2a1e;border-radius:2px;overflow:hidden;}
+  .stat-bar-fill{height:100%;border-radius:2px;transition:width 0.8s cubic-bezier(.34,1.56,.64,1);}
+  .class-badge{background:var(--bg-card2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;}
+  .class-icon{font-size:32px;animation:float 4s ease-in-out infinite;}
+  .class-info{flex:1;}
+  .class-label{font-size:10px;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;}
+  .class-name{font-family:'Cinzel',serif;font-size:18px;color:var(--text-primary);margin-top:2px;}
+  .class-sub{font-size:11px;color:var(--text-secondary);margin-top:3px;}
+  .tale-btn{width:100%;background:linear-gradient(135deg,rgba(26,42,30,0.8),rgba(22,32,24,0.8));border:1px solid var(--border-glow);border-radius:12px;padding:14px;color:var(--text-secondary);font-family:'Lato',sans-serif;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.3s;letter-spacing:0.5px;}
+  .tale-btn:hover{color:var(--accent-gold);border-color:rgba(212,168,67,0.4);background:rgba(212,168,67,0.06);}
+  .log-cards{padding:16px;display:flex;flex-direction:column;gap:12px;}
+  .log-card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:18px;overflow:hidden;transition:all 0.3s;}
+  .log-card:hover{border-color:var(--border-glow);}
+  .log-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .log-stat-info{display:flex;align-items:center;gap:10px;}
+  .log-stat-icon{font-size:24px;}
+  .log-stat-name{font-family:'Cinzel',serif;font-size:14px;color:var(--text-primary);}
+  .log-stat-val{font-size:11px;color:var(--text-muted);margin-top:2px;}
+  .log-stat-current{font-family:'Cinzel',serif;font-size:20px;font-weight:600;}
+  .log-primary-btn{width:100%;padding:12px;border-radius:10px;border:none;font-family:'Lato',sans-serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.25s;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .log-secondary-btn{width:100%;margin-top:8px;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(202,90,78,0.2);color:rgba(202,90,78,0.7);font-family:'Lato',sans-serif;font-size:11px;cursor:pointer;transition:all 0.25s;letter-spacing:0.5px;}
+  .log-secondary-btn:hover{border-color:rgba(202,90,78,0.5);color:var(--accent-red);}
+  .leaderboard-wrap{padding:16px;}
+  .lb-filter{display:flex;gap:8px;margin-bottom:16px;}
+  .lb-filter-btn{flex:1;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-muted);font-family:'Lato',sans-serif;font-size:11px;cursor:pointer;transition:all 0.2s;}
+  .lb-filter-btn.active{border-color:var(--accent-green);color:var(--accent-green);background:var(--glow-green);}
+  .lb-entry{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;animation:fadeInUp 0.4s ease both;}
+  .lb-entry.is-user{border-color:var(--border-glow);background:var(--bg-card2);}
+  .lb-rank{font-family:'Cinzel',serif;font-size:16px;font-weight:700;color:var(--text-muted);width:28px;}
+  .lb-rank.gold{color:var(--accent-gold);}
+  .lb-rank.silver{color:#c0c0c0;}
+  .lb-rank.bronze{color:#cd7f32;}
+  .lb-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;background:var(--bg-mid);border:1px solid var(--border);}
+  .lb-info{flex:1;}
+  .lb-name{font-size:13px;color:var(--text-primary);font-weight:700;}
+  .lb-class{font-size:10px;color:var(--text-muted);letter-spacing:1px;}
+  .lb-score{font-family:'Cinzel',serif;font-size:16px;color:var(--accent-green);}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px);animation:fadeInUp 0.2s ease;}
+  .modal-box{background:var(--bg-mid);border:1px solid var(--border-glow);border-radius:20px;padding:24px;width:100%;max-width:420px;max-height:85vh;overflow-y:auto;position:relative;box-shadow:0 0 60px rgba(78,202,110,0.1);animation:fadeInUp 0.3s cubic-bezier(.34,1.56,.64,1);}
+  .modal-title{font-family:'Cinzel',serif;font-size:18px;color:var(--text-primary);margin-bottom:6px;}
+  .modal-sub{font-size:12px;color:var(--text-muted);margin-bottom:20px;letter-spacing:0.5px;line-height:1.6;}
+  .modal-close{position:absolute;top:16px;right:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);font-size:16px;}
+  .modal-close:hover{color:var(--text-primary);}
+  .toast{position:fixed;bottom:85px;left:50%;transform:translateX(-50%);background:var(--bg-card2);border:1px solid var(--border-glow);border-radius:12px;padding:10px 18px;font-size:13px;color:var(--text-primary);z-index:200;white-space:nowrap;box-shadow:0 4px 24px rgba(0,0,0,0.4);animation:toast-in 0.3s ease;display:flex;align-items:center;gap:8px;}
+  .analyzing-bar{width:100%;height:3px;background:var(--bg-card);border-radius:2px;overflow:hidden;margin-top:12px;}
+  .analyzing-fill{height:100%;background:linear-gradient(90deg,var(--accent-blue),var(--accent-green));border-radius:2px;animation:analyzing-move 2.2s ease-in-out forwards;}
+  .tale-bg{background:linear-gradient(135deg,#0d1f12,#102018,#0d1a15);border:1px solid var(--border-glow);border-radius:16px;padding:20px;margin-top:12px;position:relative;overflow:hidden;}
+  .tale-bg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(78,202,110,0.06) 0%,transparent 60%);}
+  .tale-text{font-family:'Lato',sans-serif;font-size:14px;color:var(--text-secondary);line-height:1.8;position:relative;font-style:italic;}
+  .tale-highlight{color:var(--accent-green);font-style:normal;font-weight:700;}
+  .debt-shadow{animation:debt-pulse 3s ease-in-out infinite;}
+  .witness-box{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;margin-top:12px;}
+  .witness-btn{width:100%;padding:11px;border-radius:10px;background:linear-gradient(135deg,#1a3d28,#2a5a3e);border:1px solid rgba(78,202,110,0.3);color:var(--accent-green);font-family:'Lato',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .witness-btn:hover{background:linear-gradient(135deg,#1f4a30,#326b4a);}
+  .witness-btn:disabled{opacity:0.5;cursor:not-allowed;}
+  .secondary-btn{width:100%;padding:9px;border-radius:8px;border:1px dashed var(--border-glow);background:transparent;color:var(--text-muted);font-family:'Lato',sans-serif;font-size:11px;cursor:pointer;margin-top:8px;transition:all 0.2s;}
+  .secondary-btn:hover{color:var(--text-secondary);border-color:var(--text-muted);}
+  .file-upload-area{border:1.5px dashed var(--border-glow);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;margin-top:10px;background:rgba(78,202,110,0.03);}
+  .file-upload-area:hover{background:rgba(78,202,110,0.06);}
+  .file-upload-area input{display:none;}
+  .star{position:absolute;border-radius:50%;background:white;animation:blink-star 3s ease-in-out infinite;}
+  /* QR */
+  .qr-wrap{background:var(--bg-card2);border:2px solid var(--border-glow);border-radius:16px;padding:16px;display:flex;justify-content:center;align-items:center;margin:14px 0;animation:qr-pulse 2s ease-in-out infinite;}
+  .qr-wrap canvas,.qr-wrap img{border-radius:6px;display:block;}
+  .qr-viewfinder{position:relative;width:100%;aspect-ratio:1;max-width:220px;margin:0 auto 14px;border-radius:12px;overflow:hidden;background:#000;border:2px solid var(--border-glow);}
+  .qr-viewfinder video{width:100%;height:100%;object-fit:cover;}
+  .qr-viewfinder canvas.scan-canvas{display:none;}
+  .scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent-green),transparent);animation:scan-line 1.8s linear infinite;z-index:2;}
+  .corner{position:absolute;width:22px;height:22px;border-color:var(--accent-green);border-style:solid;z-index:3;}
+  .corner.tl{top:8px;left:8px;border-width:3px 0 0 3px;border-radius:4px 0 0 0;}
+  .corner.tr{top:8px;right:8px;border-width:3px 3px 0 0;border-radius:0 4px 0 0;}
+  .corner.bl{bottom:8px;left:8px;border-width:0 0 3px 3px;border-radius:0 0 0 4px;}
+  .corner.br{bottom:8px;right:8px;border-width:0 3px 3px 0;border-radius:0 0 4px 0;}
+  .code-pill{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:7px 12px;text-align:center;font-family:monospace;font-size:10px;color:var(--text-secondary);letter-spacing:1.5px;margin-bottom:10px;}
+  .reward-table{background:rgba(78,202,110,0.05);border:1px solid var(--border-glow);border-radius:12px;padding:14px;margin:10px 0;}
+  .reward-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:12px;}
+  .reward-row+.reward-row{border-top:1px solid var(--border);}
+  .reward-label{color:var(--text-secondary);}
+  .reward-val{font-weight:700;color:var(--accent-gold);}
+  .reward-total-val{font-weight:700;color:var(--accent-green);font-size:14px;}
+  .success-ring{width:64px;height:64px;border-radius:50%;background:rgba(78,202,110,0.12);border:2px solid var(--accent-green);display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 10px;animation:bloom 0.5s ease;}
+  .error-banner{font-size:11px;color:var(--accent-red);background:rgba(202,90,78,0.08);border:1px solid rgba(202,90,78,0.2);border-radius:8px;padding:8px 12px;margin:6px 0;text-align:center;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ── CONSTANTS ─────────────────────────────────────────────────────────────
+const STAT_CONFIGS = {
+  agility:  { label:'Agility',  icon:'🏃', color:'#4eca6e', description:'Movement & Transport',   primary:'🚶 Log Walk / Cycle',            secondary:'...or took a car / flight?',          requiresImage:false },
+  vitality: { label:'Vitality', icon:'🌿', color:'#82ca6e', description:'Food & Nourishment',      primary:'🥗 Log Plant-Based Meal',         secondary:'...or ate meat / processed food?',    requiresImage:true  },
+  purity:   { label:'Purity',   icon:'💧', color:'#4ab8ca', description:'Waste & Energy',          primary:'♻️ Log Recycle / Green Energy',   secondary:'...or wasted energy / no recycling?', requiresImage:true  },
+  wealth:   { label:'Wealth',   icon:'🌱', color:'#d4a843', description:'Consumption & Shopping',  primary:'🛒 Log Sustainable Purchase',     secondary:'...or bought fast fashion / excess?', requiresImage:false },
+};
+const ROLE_XP     = { agility:8, vitality:10, purity:10, wealth:6 };
+const WITNESS_BONUS = 10;
+
+const ECO_STATES = [
+  { min:0,  max:19,  name:'The Ashen Expanse',      color:'#3a3d3a' },
+  { min:20, max:39,  name:'The Sprouting',           color:'#2d5c35' },
+  { min:40, max:59,  name:'The Flourishing',         color:'#3a7a44' },
+  { min:60, max:79,  name:'The Verdant Realm',       color:'#4a9a58' },
+  { min:80, max:100, name:'The Luminous Sanctuary',  color:'#5aba6e' },
+];
+const CLASS_DATA = {
+  agility:  { name:'The Ranger',            icon:'🏹', desc:'Swift and untethered, you tread lightly.'          },
+  vitality: { name:'The Cultivator',        icon:'🌾', desc:'Nourished by the earth, you grow deeply.'           },
+  purity:   { name:'The Purifier',          icon:'🌊', desc:'Clear as water, you cleanse what is tainted.'       },
+  wealth:   { name:'The Merchant of Green', icon:'⚖️', desc:'Every choice a vote for the world you want.'       },
+  default:  { name:'The Ember',             icon:'🔥', desc:'A spark seeking its element.'                      },
+};
+const MOCK_LB = [
+  { id:'u2', name:'GreenSage',    score:88, trustTier:'high', class:'agility',  karma:340 },
+  { id:'u3', name:'PureRoot',     score:74, trustTier:'peer', class:'purity',   karma:210 },
+  { id:'u4', name:'WildHarvest',  score:61, trustTier:'peer', class:'vitality', karma:180 },
+  { id:'u5', name:'SilverStream', score:48, trustTier:'self', class:'wealth',   karma:45  },
+  { id:'u6', name:'DuskWatcher',  score:22, trustTier:'self', class:'agility',  karma:12  },
+];
+const TALE_N = {
+  agility:  ['Your feet have written a story across the earth this week.','Every step was a vote for a greener tomorrow.'],
+  vitality: ['The garden answered your choices with abundance.','Each plant-based meal fed the roots of your world.'],
+  purity:   ['Clean hands, clear streams — you filtered the world around you.','Your discipline turned chaos into clarity.'],
+  wealth:   ['Thoughtful hands touched lightly what they held.','You chose sufficiency over surplus.'],
+};
+
+// ── HELPERS ────────────────────────────────────────────────────────────────
+function uuid() { return Math.random().toString(36).slice(2,9).toUpperCase(); }
+function getEcoState(score) { return ECO_STATES.find(s=>score>=s.min&&score<=s.max)||ECO_STATES[0]; }
+function getEcoScore(stats) { return Math.round((stats.agility+stats.vitality+stats.purity+stats.wealth)/4); }
+function getHighestStat(stats) { return Object.entries(stats).sort((a,b)=>b[1]-a[1])[0][0]; }
+function getLowestStat(stats)  { return Object.entries(stats).sort((a,b)=>a[1]-b[1])[0][0]; }
+function getClass(stats) { const h=getHighestStat(stats); return stats[h]>35?CLASS_DATA[h]:CLASS_DATA.default; }
+function getTrustIcon(t) { return t==='high'?'🛡️':t==='peer'?'👀':'📝'; }
+function getLvl(xp) { return Math.floor(xp/100)+1; }
+function getXPPct(xp) { return ((xp%100)/100)*100; }
+
+// Encode a log action into a QR payload
+function makePayload(profile, type, xpGain, actionId) {
+  return JSON.stringify({ v:1, id:actionId, user:profile.name, uid:profile.id, type, label:STAT_CONFIGS[type].label, baseXP:xpGain, roleBonus:ROLE_XP[type], ts:Date.now() });
+}
+
+// ── LOCAL STORAGE ──────────────────────────────────────────────────────────
+const DEF_PROFILE = { id:'local_user_1', name:'EcoWarrior', level:1, xp:0, karma:0, streak:0, lastLogDate:null, carbonDebt:20, stats:{ agility:30, vitality:30, purity:30, wealth:30 }, trustTier:'self' };
+function loadProfile()     { try { const p=localStorage.getItem('crpg_profile'); return p?JSON.parse(p):DEF_PROFILE; } catch{ return DEF_PROFILE; } }
+function saveProfile(p)    { localStorage.setItem('crpg_profile',JSON.stringify(p)); }
+function loadLog()         { try { const l=localStorage.getItem('crpg_actions'); return l?JSON.parse(l):[]; } catch{ return []; } }
+function saveLog(l)        { localStorage.setItem('crpg_actions',JSON.stringify(l)); }
+function loadHashes()      { try { const h=localStorage.getItem('crpg_hashes'); return h?JSON.parse(h):{}; } catch{ return {}; } }
+function saveHashes(h)     { localStorage.setItem('crpg_hashes',JSON.stringify(h)); }
+
+// ── SVG HELPERS ────────────────────────────────────────────────────────────
+function TurbineGroup({x,y,scale,speed}) {
+  return (
+    <g transform={`translate(${x},${y}) scale(${scale})`}>
+      <line x1="0" y1="0" x2="0" y2="50" stroke="#6a7a6e" strokeWidth="3"/>
+      <g style={{animation:`spin-turbine ${speed}s linear infinite`,transformOrigin:'0px 0px'}}>
+        {[0,120,240].map(a=>(
+          <ellipse key={a} cx={Math.cos((a-90)*Math.PI/180)*18} cy={Math.sin((a-90)*Math.PI/180)*18} rx="14" ry="4" fill="#8aaa8e" opacity="0.8" transform={`rotate(${a},0,0)`}/>
+        ))}
+        <circle cx="0" cy="0" r="4" fill="#5a7a5e"/>
+      </g>
+    </g>
+  );
+}
+function FoxSVG({x,y}) {
+  return (
+    <g transform={`translate(${x},${y})`} style={{animation:'float 4s 1s ease-in-out infinite'}}>
+      <ellipse cx="0" cy="-4" rx="10" ry="6" fill="#c86030"/>
+      <polygon points="-4,-10 -7,-18 -1,-10" fill="#c86030"/>
+      <polygon points="4,-10 7,-18 1,-10" fill="#c86030"/>
+      <ellipse cx="0" cy="-4" rx="4" ry="3" fill="#e8a070" opacity="0.8"/>
+      <circle cx="-3" cy="-6" r="1.2" fill="#1a1a18"/><circle cx="3" cy="-6" r="1.2" fill="#1a1a18"/>
+      <path d="M-12 0 Q-5 -2 0 0" stroke="#c86030" strokeWidth="3" strokeLinecap="round" fill="none"/>
+    </g>
+  );
+}
+function BirdSVG({x,y}) {
+  return (
+    <g transform={`translate(${x},${y})`} style={{animation:'float 3s 0.5s ease-in-out infinite'}}>
+      <path d="M-8 0 Q0 -6 8 0" fill="none" stroke="#4a7a9e" strokeWidth="2.5" strokeLinecap="round"/>
+      <circle cx="8" cy="-1" r="3" fill="#5a8aae"/>
+    </g>
+  );
+}
+function Ecosystem({ ecoScore, hasDebt, animKey }) {
+  const state = getEcoState(ecoScore);
+  const level = ECO_STATES.indexOf(state);
+  const stars = Array.from({length:18},(_,i)=>({x:Math.sin(i*137.5)*45+50,y:Math.cos(i*97.3)*30+25,r:0.8,delay:i*0.2}));
+  return (
+    <svg viewBox="0 0 400 225" className="eco-svg" key={animKey}>
+      <defs>
+        <radialGradient id="sky-g" cx="50%" cy="0%" r="100%">
+          <stop offset="0%" stopColor={level>=4?"#0a2028":level>=3?"#0a1a20":level>=2?"#0a1820":level>=1?"#141810":"#1a1a1a"}/>
+          <stop offset="100%" stopColor={level>=4?"#051510":level>=3?"#051210":level>=2?"#050f0a":"#0a0a0a"}/>
+        </radialGradient>
+        <radialGradient id="sun-g" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor={level>=4?"#ffe87a":"#ffb030"} stopOpacity="0.9"/>
+          <stop offset="100%" stopColor="transparent"/>
+        </radialGradient>
+        <linearGradient id="gnd-g" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={level>=3?"#2a5c30":level>=2?"#1e4028":level>=1?"#1a3020":"#1a1c18"}/>
+          <stop offset="100%" stopColor={level>=2?"#162818":"#0f1210"}/>
+        </linearGradient>
+        <linearGradient id="water-g" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#1a5a6e"/><stop offset="50%" stopColor="#2a8a9e"/><stop offset="100%" stopColor="#1a5a6e"/>
+        </linearGradient>
+        <filter id="glow"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <filter id="sglow"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <rect width="400" height="225" fill="url(#sky-g)"/>
+      {level>=2 && stars.map((s,i)=>(
+        <circle key={i} cx={s.x*4} cy={s.y*1.5} r={s.r} fill="white" opacity="0.5" className="star" style={{animationDelay:`${s.delay}s`}}/>
+      ))}
+      {level>=1 && <circle cx="340" cy="30" r="24" fill="url(#sun-g)" opacity="0.5" filter="url(#sglow)"/>}
+      {level>=1 && <circle cx="340" cy="30" r="12" fill={level>=4?"#ffe87a":"#ffb030"} opacity="0.7"/>}
+      {level===0 && [100,200,320].map((cx,i)=>(
+        <ellipse key={i} cx={cx} cy={50+i*5} rx={60-i*5} ry={22-i*2} fill="#2a2c28" opacity="0.7"/>
+      ))}
+      <path d="M0 155 Q100 145 200 155 Q300 165 400 155 L400 225 L0 225Z" fill="url(#gnd-g)"/>
+      {level>=1 && Array.from({length:30},(_,i)=>(
+        <line key={i} x1={i*14+5} y1="155" x2={i*14+(i%2?-3:3)} y2={145-Math.sin(i)*3} stroke="#3a7a44" strokeWidth="1.5" opacity="0.7"/>
+      ))}
+      {level>=2 && (
+        <path d="M30 175 Q80 168 140 172 Q200 176 260 170 Q310 165 370 168" fill="none" stroke="url(#water-g)" strokeWidth={level>=3?8:4} strokeLinecap="round" opacity="0.8" style={{strokeDasharray:200,strokeDashoffset:200,animation:'stream-flow 3s linear infinite'}}/>
+      )}
+      {level>=3 && <ellipse cx="310" cy="178" rx="55" ry="18" fill="#1a6a7e" opacity="0.6"/>}
+      {level===0 && <>
+        <line x1="200" y1="155" x2="200" y2="110" stroke="#3a3530" strokeWidth="3"/>
+        <line x1="200" y1="130" x2="185" y2="120" stroke="#3a3530" strokeWidth="2"/>
+        <line x1="200" y1="125" x2="215" y2="115" stroke="#3a3530" strokeWidth="2"/>
+      </>}
+      {level>=1 && [60,120,180,250,320,370].map((x,i)=>(
+        <g key={i}>
+          <line x1={x} y1="155" x2={x+(i%2?-4:4)} y2={140} stroke="#3a7a44" strokeWidth="2.5"/>
+          <ellipse cx={x+(i%2?-4:4)} cy={138} rx="5" ry="3" fill="#4a9a5a" transform={`rotate(${i*15},${x+(i%2?-4:4)},138)`}/>
+        </g>
+      ))}
+      {level>=2 && [{x:75,y:152,c:'#e87a9e',r:5},{x:155,y:149,c:'#a87adc',r:4},{x:225,y:151,c:'#e8ca5a',r:5},...(level>=3?[{x:290,y:150,c:'#e87a9e',r:4},{x:350,y:152,c:'#5ae87a',r:5}]:[])].map((f,i)=>(
+        <g key={i} style={{animation:`bloom 0.6s ${i*0.1}s ease both`}}>
+          <line x1={f.x} y1={f.y} x2={f.x} y2={f.y+16} stroke="#3a7a44" strokeWidth="1.5"/>
+          {[0,72,144,216,288].map(a=>(<ellipse key={a} cx={f.x+Math.cos(a*Math.PI/180)*f.r} cy={f.y+Math.sin(a*Math.PI/180)*f.r} rx={f.r-1} ry={f.r-1} fill={f.c} opacity="0.85" transform={`rotate(${a},${f.x},${f.y})`}/>))}
+          <circle cx={f.x} cy={f.y} r="2.5" fill="#ffe87a"/>
+        </g>
+      ))}
+      {level>=3 && <>
+        <rect x="96" y="120" width="8" height="36" fill="#5a3a20" rx="2"/>
+        <circle cx="100" cy="105" r="28" fill="#2a6a3a" opacity="0.9"/>
+        <circle cx="88" cy="115" r="18" fill="#2a7a40" opacity="0.8"/>
+        <circle cx="115" cy="110" r="20" fill="#2a6a38" opacity="0.8"/>
+      </>}
+      {level>=4 && <>
+        <rect x="294" y="118" width="6" height="34" fill="#5a3a20" rx="2"/>
+        <circle cx="297" cy="106" r="22" fill="#3a8a4e" opacity="0.85"/>
+      </>}
+      {level>=1 && <TurbineGroup x={340} y={100} scale={0.7} speed={level>=2?2:4}/>}
+      {level>=2 && <TurbineGroup x={50}  y={110} scale={0.55} speed={3}/>}
+      {level>=3 && <FoxSVG  x={250} y={147}/>}
+      {level>=4 && <BirdSVG x={130} y={90}/>}
+      {level>=4 && [{x:170,c:'#4aeac0'},{x:195,c:'#7a9aea'},{x:210,c:'#ea7aea'},{x:380,c:'#4aeac0'},{x:25,c:'#7aea9a'}].map((p,i)=>(
+        <g key={i} filter="url(#glow)">
+          <line x1={p.x} y1={150} x2={p.x} y2={160} stroke={p.c} strokeWidth="1.5" opacity="0.8"/>
+          <circle cx={p.x} cy={150} r="4" fill={p.c} opacity="0.7"/>
+        </g>
+      ))}
+      {hasDebt && <rect width="400" height="225" fill="#1a1a1a" opacity="0.28" className="debt-shadow" style={{mixBlendMode:'multiply'}}/>}
+    </svg>
+  );
+}
+
+// ── SMALL SHARED COMPONENTS ────────────────────────────────────────────────
+function Toast({msg,icon}) { return <div className="toast">{icon||'🌱'} {msg}</div>; }
+
+function Header({profile, onScan}) {
+  return (
+    <div className="header">
+      <div className="header-top">
+        <div className="header-title">⬡ Carbon RPG</div>
+        <div className="header-meta">
+          <div className="streak-badge">🔥 {profile.streak}</div>
+          <div className="karma-badge">✨ {profile.karma}</div>
+          <button className="scan-btn" onClick={onScan}>📷 Witness</button>
+        </div>
+      </div>
+      <div className="xp-bar-wrap">
+        <div className="level-badge">Lv.{getLvl(profile.xp)}</div>
+        <div className="xp-bar-bg"><div className="xp-bar-fill" style={{width:`${getXPPct(profile.xp)}%`}}/></div>
+        <div className="xp-label">{profile.xp%100}/100 XP</div>
+      </div>
+    </div>
+  );
+}
+
+// ── HOME SCREEN ────────────────────────────────────────────────────────────
+function HomeScreen({profile, animKey, onTale}) {
+  const stats = profile.stats;
+  const ecoScore = getEcoScore(stats);
+  const ecoState = getEcoState(ecoScore);
+  const cls = getClass(stats);
+  const sc = {agility:'#4eca6e',vitality:'#82ca6e',purity:'#4ab8ca',wealth:'#d4a843'};
+  return (
+    <div className="tab-content">
+      <div className="ecosystem-wrap">
+        <Ecosystem ecoScore={ecoScore} hasDebt={profile.carbonDebt>10} animKey={animKey}/>
+        <div className="eco-score-overlay">
+          <span style={{color:ecoState.color,fontWeight:700}}>{ecoScore}</span>
+          <span style={{color:'rgba(255,255,255,0.3)'}}>|</span>
+          <span className="eco-state-name">{ecoState.name.toUpperCase()}</span>
+        </div>
+      </div>
+      <div className="home-section">
+        <div className="class-badge">
+          <div className="class-icon">{cls.icon}</div>
+          <div className="class-info">
+            <div className="class-label">Your Class</div>
+            <div className="class-name">{cls.name}</div>
+            <div className="class-sub">{cls.desc}</div>
+          </div>
+          <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4}}>
+            <div style={{fontSize:11,color:'var(--text-muted)'}}>Trust</div>
+            <div style={{fontSize:18}}>{getTrustIcon(profile.trustTier)}</div>
+          </div>
+        </div>
+        <div className="section-title">Vital Signs</div>
+        <div className="stats-grid">
+          {Object.entries(stats).map(([k,v])=>(
+            <div className="stat-card" key={k}>
+              <div className="stat-header"><div className="stat-name">{STAT_CONFIGS[k].label}</div><div className="stat-icon">{STAT_CONFIGS[k].icon}</div></div>
+              <div className="stat-value" style={{color:sc[k]}}>{v}</div>
+              <div className="stat-bar-bg"><div className="stat-bar-fill" style={{width:`${v}%`,background:sc[k]}}/></div>
+              <div style={{fontSize:10,color:'var(--text-muted)',marginTop:2}}>{STAT_CONFIGS[k].description}</div>
+            </div>
+          ))}
+        </div>
+        {profile.carbonDebt>0 && (
+          <div style={{background:'rgba(202,90,78,0.08)',border:'1px solid rgba(202,90,78,0.25)',borderRadius:12,padding:'12px 14px',marginBottom:12,display:'flex',alignItems:'center',gap:10}}>
+            <span style={{fontSize:20}}>🌫️</span>
+            <div>
+              <div style={{fontSize:12,color:'#ca8a7a',fontWeight:700}}>Carbon Debt: {profile.carbonDebt}</div>
+              <div style={{fontSize:11,color:'var(--text-muted)'}}>Log positive actions to clear the shadow.</div>
+            </div>
+          </div>
+        )}
+        <button className="tale-btn" onClick={onTale}><span>📜</span> Generate This Week's Tale</button>
+      </div>
+    </div>
+  );
+}
+
+// ── QR GENERATOR MODAL ─────────────────────────────────────────────────────
+// Shown after a user logs an action so they can share it for witnessing.
+function QRGeneratorModal({ profile, actionId, type, xpGain, onClose, onWitnessed }) {
+  const qrRef = useRef(null);
+  const [witnessed, setWitnessed] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const payload = makePayload(profile, type, xpGain, actionId);
+  const total = xpGain + WITNESS_BONUS;
+
+  useEffect(() => {
+    if (!qrRef.current) return;
+    qrRef.current.innerHTML = '';
+    try {
+      new QRCode(qrRef.current, { text:payload, width:172, height:172, colorDark:'#d4e8d0', colorLight:'#111a14', correctLevel:QRCode.CorrectLevel.H });
+    } catch(e) {
+      qrRef.current.innerHTML = '<div style="color:var(--text-muted);font-size:11px;padding:8px;text-align:center">QR library loading...</div>';
+    }
+  }, [payload]);
+
+  const downloadQR = () => {
+    const c = qrRef.current && qrRef.current.querySelector('canvas');
+    if (!c) return;
+    const a = document.createElement('a');
+    a.href = c.toDataURL('image/png');
+    a.download = `carbon-qr-${actionId}.png`;
+    a.click();
+  };
+
+  const copyData = () => {
+    navigator.clipboard.writeText(payload).catch(()=>{});
+    setCopied(true); setTimeout(()=>setCopied(false),2000);
+  };
+
+  const simulateWitness = () => {
+    setWitnessed(true);
+    onWitnessed(WITNESS_BONUS);
+  };
+
+  return (
+    <div className="modal-overlay" onClick={e=>{if(e.target.className==='modal-overlay')onClose()}}>
+      <div className="modal-box">
+        <button className="modal-close" onClick={onClose}>✕</button>
+        <div className="modal-title">🎯 Get Witnessed</div>
+        <div className="modal-sub">Have a friend scan your QR code to verify your action. You earn +{WITNESS_BONUS} Karma bonus and your Trust Tier improves.</div>
+
+        {/* Action summary */}
+        <div style={{display:'flex',alignItems:'center',gap:12,background:'var(--bg-card)',border:'1px solid var(--border)',borderRadius:12,padding:'10px 14px',marginBottom:4}}>
+          <div style={{fontSize:26}}>{STAT_CONFIGS[type].icon}</div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:13,color:'var(--text-primary)',fontWeight:700}}>{STAT_CONFIGS[type].label} Action</div>
+            <div style={{fontSize:10,color:'var(--text-muted)',marginTop:2}}>{STAT_CONFIGS[type].description}</div>
+          </div>
+          <div style={{textAlign:'right'}}>
+            <div style={{fontSize:10,color:'var(--text-muted)'}}>Base XP</div>
+            <div style={{fontSize:16,fontWeight:700,color:'var(--accent-gold)'}}>+{xpGain}</div>
+          </div>
+        </div>
+
+        {/* QR code */}
+        <div className="qr-wrap"><div ref={qrRef}/></div>
+        <div className="code-pill">CRPG · {actionId} · {profile.name}</div>
+
+        {/* Reward table */}
+        <div className="reward-table">
+          <div style={{fontSize:10,color:'var(--text-muted)',letterSpacing:2,marginBottom:8,textTransform:'uppercase'}}>Reward Breakdown</div>
+          <div className="reward-row"><span className="reward-label">Base action XP</span><span className="reward-val">+{xpGain} XP</span></div>
+          <div className="reward-row"><span className="reward-label">Role bonus ({STAT_CONFIGS[type].label})</span><span className="reward-val">+{ROLE_XP[type]} XP</span></div>
+          <div className="reward-row"><span className="reward-label">Witness bonus (on scan)</span><span className="reward-val">+{WITNESS_BONUS} Karma</span></div>
+          <div className="reward-row">
+            <span className="reward-label" style={{fontWeight:700,color:'var(--text-primary)'}}>Total if witnessed</span>
+            <span className="reward-total-val">+{total} XP + {WITNESS_BONUS} ✨</span>
+          </div>
+        </div>
+
+        {!witnessed ? <>
+          <button className="witness-btn" onClick={downloadQR}>⬇️ Download QR Code</button>
+          <button className="witness-btn" style={{background:'rgba(78,202,110,0.06)',border:'1px solid rgba(78,202,110,0.2)'}} onClick={copyData}>
+            {copied ? '✅ Copied!' : '📋 Copy QR Data'}
+          </button>
+          <button className="secondary-btn" onClick={simulateWitness}>🧪 Simulate Friend Scan (Demo)</button>
+        </> : (
+          <div style={{background:'rgba(78,202,110,0.1)',border:'1px solid var(--border-glow)',borderRadius:12,padding:14,textAlign:'center',marginTop:12}}>
+            <div style={{fontSize:30,marginBottom:6}}>👀 ✅</div>
+            <div style={{fontSize:14,color:'var(--accent-green)',fontWeight:700}}>Action Witnessed!</div>
+            <div style={{fontSize:12,color:'var(--text-secondary)',marginTop:4}}>+{WITNESS_BONUS} Karma added to your profile.</div>
+          </div>
+        )}
+        <button className="witness-btn" style={{marginTop:10,background:'transparent',border:'1px solid var(--border)',color:'var(--text-muted)'}} onClick={onClose}>Done</button>
+      </div>
+    </div>
+  );
+}
+
+// ── QR SCANNER MODAL ───────────────────────────────────────────────────────
+// Shown when a friend taps the "Witness" button to scan another user's QR.
+function ScanModal({ onClose, onWitness }) {
+  const [view, setView] = useState('scan'); // 'scan' | 'result'
+  const [camState, setCamState] = useState('idle'); // idle | active | denied
+  const [result, setResult] = useState(null);
+  const [errMsg, setErrMsg] = useState(null);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const rafRef = useRef(null);
+  const streamRef = useRef(null);
+
+  const stopCamera = useCallback(() => {
+    if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
+    if (streamRef.current) { streamRef.current.getTracks().forEach(t=>t.stop()); streamRef.current = null; }
+    setCamState('idle');
+  }, []);
+
+  useEffect(()=>()=>stopCamera(), [stopCamera]);
+
+  const interpretRaw = (raw) => {
+    try {
+      const d = JSON.parse(raw);
+      if (d.v===1 && d.user && d.type && d.baseXP) {
+        const witnessKarma = d.baseXP + WITNESS_BONUS;
+        setResult({ username:d.user, type:d.type, label:d.label||STAT_CONFIGS[d.type]?.label, baseXP:d.baseXP, roleBonus:d.roleBonus||ROLE_XP[d.type]||6, witnessKarma, id:d.id });
+        setView('result');
+      } else { setErrMsg('Not a valid Carbon RPG QR code.'); }
+    } catch { setErrMsg('Could not decode. Try the Demo Scan.'); }
+  };
+
+  const tick = useCallback(() => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+    if (video.readyState >= 2 && video.videoWidth > 0) {
+      canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0);
+      try {
+        const img = ctx.getImageData(0,0,canvas.width,canvas.height);
+        const qr = window.jsQR ? window.jsQR(img.data, img.width, img.height, {inversionAttempts:'dontInvert'}) : null;
+        if (qr && qr.data) { stopCamera(); interpretRaw(qr.data); return; }
+      } catch {}
+    }
+    rafRef.current = requestAnimationFrame(tick);
+  }, [stopCamera]);
+
+  const startCamera = async () => {
+    setErrMsg(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } });
+      streamRef.current = stream;
+      videoRef.current.srcObject = stream;
+      await videoRef.current.play();
+      setCamState('active');
+      rafRef.current = requestAnimationFrame(tick);
+    } catch {
+      setCamState('denied');
+      setErrMsg('Camera blocked. Use the Demo Scan below.');
+    }
+  };
+
+  const demoScan = () => {
+    stopCamera(); setErrMsg(null);
+    const types = Object.keys(STAT_CONFIGS);
+    const t = types[Math.floor(Math.random()*types.length)];
+    const bxp = ROLE_XP[t] + 3 + Math.floor(Math.random()*7);
+    const names = ['GreenSage','EcoHero','PureSpirit','WildRoot'];
+    interpretRaw(JSON.stringify({ v:1, id:uuid(), user:names[Math.floor(Math.random()*names.length)], uid:'demo', type:t, label:STAT_CONFIGS[t].label, baseXP:bxp, roleBonus:ROLE_XP[t], ts:Date.now() }));
+  };
+
+  const confirmWitness = () => { onWitness(result.witnessKarma, result); onClose(); };
+
+  return (
+    <div className="modal-overlay" onClick={e=>{if(e.target.className==='modal-overlay')onClose()}}>
+      <div className="modal-box">
+        <button className="modal-close" onClick={onClose}>✕</button>
+
+        {view==='scan' && <>
+          <div className="modal-title">📷 Scan to Witness</div>
+          <div className="modal-sub">Scan a friend's QR code to verify their eco-action. You earn Karma; they get a Witness Bonus.</div>
+
+          <div className="qr-viewfinder">
+            <video ref={videoRef} playsInline muted style={{width:'100%',height:'100%',objectFit:'cover',display:camState==='active'?'block':'none'}}/>
+            <canvas ref={canvasRef} className="scan-canvas"/>
+            {camState!=='active' && (
+              <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:8,color:'var(--text-muted)',fontSize:12}}>
+                <div style={{fontSize:36}}>📱</div>
+                <div style={{fontSize:11}}>Camera preview</div>
+              </div>
+            )}
+            {camState==='active' && <>
+              <div className="scan-line"/>
+              <div className="corner tl"/><div className="corner tr"/>
+              <div className="corner bl"/><div className="corner br"/>
+            </>}
+          </div>
+
+          {errMsg && <div className="error-banner">{errMsg}</div>}
+
+          {camState==='active' ? (
+            <button className="witness-btn" style={{background:'rgba(202,90,78,0.12)',borderColor:'rgba(202,90,78,0.3)',color:'var(--accent-red)'}} onClick={stopCamera}>⏹ Stop Camera</button>
+          ) : (
+            <button className="witness-btn" onClick={startCamera}>📷 Open Camera to Scan</button>
+          )}
+          <button className="secondary-btn" onClick={demoScan}>🧪 Demo Scan (no camera needed)</button>
+        </>}
+
+        {view==='result' && result && <>
+          <div className="modal-title">👀 Action Found!</div>
+          <div className="modal-sub">Confirm to witness this action and collect your Karma reward.</div>
+
+          <div style={{background:'var(--glow-green)',border:'1px solid var(--border-glow)',borderRadius:14,padding:18,textAlign:'center',margin:'8px 0 14px'}}>
+            <div style={{fontSize:34,marginBottom:6}}>{STAT_CONFIGS[result.type]?.icon||'🌱'}</div>
+            <div style={{fontSize:15,color:'var(--text-primary)',fontWeight:700}}>@{result.username}</div>
+            <div style={{fontSize:12,color:'var(--text-secondary)',marginTop:3}}>completed a <strong>{result.label}</strong> action</div>
+          </div>
+
+          <div className="reward-table">
+            <div style={{fontSize:10,color:'var(--text-muted)',letterSpacing:2,marginBottom:8,textTransform:'uppercase'}}>Your Witness Reward</div>
+            <div className="reward-row"><span className="reward-label">Action XP (passed to witness)</span><span className="reward-val">+{result.baseXP}</span></div>
+            <div className="reward-row"><span className="reward-label">Witness bonus</span><span className="reward-val">+{WITNESS_BONUS}</span></div>
+            <div className="reward-row">
+              <span className="reward-label" style={{fontWeight:700,color:'var(--text-primary)'}}>Total Karma earned</span>
+              <span className="reward-total-val">+{result.witnessKarma} ✨</span>
+            </div>
+          </div>
+
+          <button className="witness-btn" onClick={confirmWitness}>✅ Confirm — Earn +{result.witnessKarma} Karma</button>
+          <button className="secondary-btn" onClick={()=>{setView('scan');setResult(null);setErrMsg(null);}}>← Scan Again</button>
+        </>}
+      </div>
+    </div>
+  );
+}
+
+// ── LOG SCREEN ─────────────────────────────────────────────────────────────
+function LogScreen({ profile, onLog }) {
+  const [modal, setModal] = useState(null);
+  const [localToast, setLocalToast] = useState(null);
+  const fileRef = useRef();
+
+  const showLocalToast = (msg,icon) => { setLocalToast({msg,icon}); setTimeout(()=>setLocalToast(null),3000); };
+
+  const doLog = (type, positive) => {
+    const xpGain = positive ? (ROLE_XP[type] + 3 + Math.floor(Math.random()*6)) : 0;
+    onLog(type, positive, xpGain, null, (res) => {
+      if (positive) setModal({ type, step:'success', xpGained:res.xpGained, actionId:res.actionId, witnessed:false });
+    });
+  };
+
+  const handlePrimary = (type) => {
+    if (STAT_CONFIGS[type].requiresImage) setModal({ type, step:'upload' });
+    else doLog(type, true);
+  };
+
+  const handlePhoto = (type, file) => {
+    if (!file) return;
+    setModal({ type, step:'analyzing' });
+    setTimeout(() => {
+      const valid = Math.random() < 0.7;
+      const hash = `${file.name}_${file.size}_${file.lastModified}`;
+      const hashes = loadHashes();
+      const cat = hashes[type]||[];
+      if (cat.includes(hash)) { setModal(null); showLocalToast("Already honored today — try something new!",'🌱'); return; }
+      if (valid) {
+        const isFirst = !cat.some(h=>h.startsWith(file.name));
+        saveHashes({...hashes,[type]:[...cat.slice(-2),hash]});
+        const xpGain = ROLE_XP[type] + 5 + (isFirst?5:0) + Math.floor(Math.random()*5);
+        onLog(type, true, xpGain, hash, (res) => {
+          setModal({ type, step:'success', xpGained:res.xpGained, actionId:res.actionId, witnessed:false, firstDiscovery:isFirst });
+        });
+      } else {
+        setModal({ type, step:'fail' });
+      }
+    }, 2200);
+  };
+
+  return (
+    <div className="tab-content">
+      {localToast && <Toast msg={localToast.msg} icon={localToast.icon}/>}
+      <div className="log-cards">
+        {Object.entries(STAT_CONFIGS).map(([key,cfg])=>{
+          const val = profile.stats[key];
+          const col = key==='agility'?'#4eca6e':key==='vitality'?'#82ca6e':key==='purity'?'#4ab8ca':'#d4a843';
+          return (
+            <div className="log-card" key={key}>
+              <div className="log-card-header">
+                <div className="log-stat-info">
+                  <div className="log-stat-icon">{cfg.icon}</div>
+                  <div><div className="log-stat-name">{cfg.label}</div><div className="log-stat-val">{cfg.description}</div></div>
+                </div>
+                <div className="log-stat-current" style={{color:col}}>{val}</div>
+              </div>
+              <div style={{height:3,background:'#1a2a1e',borderRadius:2,marginBottom:12,overflow:'hidden'}}>
+                <div style={{width:`${val}%`,height:'100%',background:col,borderRadius:2,transition:'width 0.5s'}}/>
+              </div>
+              <button className="log-primary-btn" style={{background:`linear-gradient(135deg,${col}22,${col}15)`,border:`1px solid ${col}40`,color:col}} onClick={()=>handlePrimary(key)}>{cfg.primary}</button>
+              <button className="log-secondary-btn" onClick={()=>doLog(key,false)}>{cfg.secondary}</button>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── INNER MODALS ── */}
+      {modal && modal.step !== 'witness' && (
+        <div className="modal-overlay" onClick={e=>{if(e.target.className==='modal-overlay')setModal(null)}}>
+          <div className="modal-box">
+            <button className="modal-close" onClick={()=>setModal(null)}>✕</button>
+
+            {modal.step==='upload' && <>
+              <div className="modal-title">📷 Upload Proof</div>
+              <div className="modal-sub">Snap a photo to verify. First-time photos earn a +5 Discovery Bonus.</div>
+              <div className="file-upload-area" onClick={()=>fileRef.current?.click()}>
+                <input ref={fileRef} type="file" accept="image/*" onChange={e=>handlePhoto(modal.type,e.target.files[0])}/>
+                <div style={{fontSize:32,marginBottom:8}}>📷</div>
+                <div style={{fontSize:13,color:'var(--text-secondary)'}}>Tap to upload photo</div>
+                <div style={{fontSize:11,color:'var(--text-muted)',marginTop:4}}>JPG · PNG · HEIC</div>
+              </div>
+              <div style={{fontSize:11,color:'var(--text-muted)',textAlign:'center',marginTop:12}}>🔒 Unique photos earn a +5 First Discovery Bonus</div>
+            </>}
+
+            {modal.step==='analyzing' && <>
+              <div className="modal-title">🔬 Analyzing...</div>
+              <div className="modal-sub">Our AI is verifying your eco-action.</div>
+              <div style={{textAlign:'center',padding:'20px 0',fontSize:40}}>🌿</div>
+              <div style={{fontSize:12,color:'var(--text-muted)',textAlign:'center',marginBottom:8}}>Checking for eco-content...</div>
+              <div className="analyzing-bar"><div className="analyzing-fill"/></div>
+            </>}
+
+            {modal.step==='success' && <>
+              <div style={{textAlign:'center',padding:'12px 0 8px'}}>
+                <div className="success-ring">✅</div>
+                <div className="modal-title" style={{textAlign:'center'}}>Action Logged!</div>
+                <div style={{fontSize:13,color:'var(--text-secondary)',textAlign:'center',marginTop:4}}>
+                  +{modal.xpGained} XP earned
+                  {modal.firstDiscovery && <span style={{color:'var(--accent-gold)'}}> · ⭐ First Discovery +5</span>}
+                </div>
+              </div>
+              <div className="witness-box">
+                <div style={{fontSize:12,color:'var(--text-muted)',marginBottom:8,lineHeight:1.6}}>
+                  Get a friend to scan your QR code for an extra <strong style={{color:'var(--accent-green)'}}>+{WITNESS_BONUS} Karma</strong> and a Trust Tier boost.
+                </div>
+                {!modal.witnessed ? (
+                  <button className="witness-btn" onClick={()=>setModal(m=>({...m,step:'witness'}))}>
+                    🎯 Generate QR Code — Get Witnessed
+                  </button>
+                ) : (
+                  <div style={{color:'var(--accent-green)',fontWeight:700,fontSize:13}}>👀 Witnessed! Karma Bonus Applied. 🎉</div>
+                )}
+              </div>
+              <button className="witness-btn" style={{marginTop:10,background:'transparent',border:'1px solid var(--border)',color:'var(--text-muted)'}} onClick={()=>setModal(null)}>Done</button>
+            </>}
+
+            {modal.step==='fail' && <>
+              <div style={{textAlign:'center',padding:'12px 0 8px'}}>
+                <div style={{fontSize:48}}>🌫️</div>
+                <div className="modal-title" style={{textAlign:'center',marginTop:8}}>Couldn't Verify</div>
+                <div style={{fontSize:13,color:'var(--text-muted)',textAlign:'center',marginTop:6,lineHeight:1.6}}>
+                  AI couldn't confirm from the photo. Try a clearer image, or log it as self-reported.
+                </div>
+              </div>
+              <button className="witness-btn" style={{marginTop:16}} onClick={()=>setModal(null)}>Try Again</button>
+            </>}
+          </div>
+        </div>
+      )}
+
+      {/* QR Generator is a full-screen modal — rendered outside the generic wrapper */}
+      {modal && modal.step==='witness' && (
+        <QRGeneratorModal
+          profile={profile}
+          actionId={modal.actionId || uuid()}
+          type={modal.type}
+          xpGain={modal.xpGained}
+          onClose={()=>setModal(m=>({...m,step:'success'}))}
+          onWitnessed={(bonus)=>{
+            setModal(m=>({...m,step:'success',witnessed:true}));
+            showLocalToast(`+${bonus} Karma! You've been witnessed! 👀`,'✨');
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── LEADERBOARD ────────────────────────────────────────────────────────────
+function LeaderboardScreen({profile}) {
+  const [filter, setFilter] = useState('all');
+  const ecoScore = getEcoScore(profile.stats);
+  const all = [...MOCK_LB, { id:'local_user_1', name:profile.name, score:ecoScore, trustTier:profile.trustTier, class:getHighestStat(profile.stats), karma:profile.karma, isUser:true }].sort((a,b)=>b.score-a.score);
+  const filtered = filter==='high' ? all.filter(u=>u.trustTier==='high') : all;
+  const rc = (i) => i===0?'gold':i===1?'silver':i===2?'bronze':'';
+  return (
+    <div className="tab-content">
+      <div className="leaderboard-wrap">
+        <div style={{marginBottom:16}}>
+          <div className="section-title">Global Rankings</div>
+          <div style={{fontSize:12,color:'var(--text-muted)'}}>Updated as you log actions.</div>
+        </div>
+        <div className="lb-filter">
+          <button className={`lb-filter-btn${filter==='all'?' active':''}`} onClick={()=>setFilter('all')}>🌍 All Players</button>
+          <button className={`lb-filter-btn${filter==='high'?' active':''}`} onClick={()=>setFilter('high')}>🛡️ High Trust</button>
+        </div>
+        <ol style={{listStyle:'none'}}>
+          {filtered.map((u,i)=>(
+            <li key={u.id} className={`lb-entry${u.isUser?' is-user':''}`} style={{animationDelay:`${i*0.05}s`}}>
+              <div className={`lb-rank ${rc(i)}`}>#{i+1}</div>
+              <div className="lb-avatar">{CLASS_DATA[u.class]?.icon||'🔥'}</div>
+              <div className="lb-info">
+                <div className="lb-name">{u.name}{u.isUser&&<span style={{fontSize:10,color:'var(--accent-green)',marginLeft:6}}>YOU</span>}</div>
+                <div className="lb-class">{CLASS_DATA[u.class]?.name||'Ember'} · Karma: {u.karma||0}</div>
+              </div>
+              <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:2}}>
+                <div className="lb-score">{u.score}</div>
+                <div style={{fontSize:14}}>{getTrustIcon(u.trustTier)}</div>
+              </div>
+            </li>
+          ))}
+        </ol>
+        <div style={{fontSize:10,color:'var(--text-muted)',textAlign:'center',marginTop:16,lineHeight:1.8}}>
+          🛡️ High Trust (50%+ Witnessed) · 👀 Peer Witnessed · 📝 Self-Reported
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── TALE MODAL ─────────────────────────────────────────────────────────────
+function TaleModal({profile, onClose}) {
+  const stats = profile.stats;
+  const high = getHighestStat(stats);
+  const low  = getLowestStat(stats);
+  const ecoState = getEcoState(getEcoScore(stats));
+  return (
+    <div className="modal-overlay" onClick={e=>{if(e.target.className==='modal-overlay')onClose()}}>
+      <div className="modal-box">
+        <button className="modal-close" onClick={onClose}>✕</button>
+        <div style={{textAlign:'center',marginBottom:4}}><div style={{fontSize:36}}>📜</div></div>
+        <div className="modal-title" style={{textAlign:'center'}}>This Week's Tale</div>
+        <div className="modal-sub" style={{textAlign:'center'}}>A chronicle of your Sanctuary's journey</div>
+        <div className="tale-bg">
+          <div className="tale-text">
+            This week, your <span className="tale-highlight">{STAT_CONFIGS[high].label} {STAT_CONFIGS[high].icon}</span> guided you like a north star. {TALE_N[high][0]}
+            <br/><br/>
+            Yet a shadow lingered where your <span style={{color:'var(--accent-red)'}}>{STAT_CONFIGS[low].label} {STAT_CONFIGS[low].icon}</span> waits for deeper attention. {TALE_N[low][1]}
+            <br/><br/>
+            Your Sanctuary's <span className="tale-highlight">{ecoState.name}</span> reflects this journey — a world both strong and still becoming.
+          </div>
+        </div>
+        <div style={{display:'flex',justifyContent:'space-between',marginTop:16,gap:8}}>
+          {Object.entries(stats).map(([k,v])=>(
+            <div key={k} style={{flex:1,textAlign:'center'}}>
+              <div style={{fontSize:18}}>{STAT_CONFIGS[k].icon}</div>
+              <div style={{fontSize:11,color:'var(--text-muted)',letterSpacing:1}}>{v}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── MAIN APP ───────────────────────────────────────────────────────────────
+function App() {
+  const [profile, setProfile] = useState(loadProfile);
+  const [tab, setTab] = useState('home');
+  const [ecoKey, setEcoKey] = useState(0);
+  const [showTale, setShowTale] = useState(false);
+  const [showScan, setShowScan] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  const showToastMsg = useCallback((msg, icon) => {
+    setToast({msg,icon}); setTimeout(()=>setToast(null), 3500);
+  }, []);
+
+  // Streak decay
+  useEffect(()=>{
+    const p = loadProfile();
+    if (p.lastLogDate) {
+      const diffDays = Math.floor((Date.now()-new Date(p.lastLogDate))/86400000);
+      if (diffDays > 1) {
+        p.streak = 0;
+        p.stats = { agility:Math.max(0,p.stats.agility-2), vitality:Math.max(0,p.stats.vitality-2), purity:Math.max(0,p.stats.purity-2), wealth:Math.max(0,p.stats.wealth-2) };
+        setProfile({...p}); saveProfile(p);
+        showToastMsg('Stat decay applied — log today to prevent further withering.','🌫️');
+      }
+    }
+  }, []);
+
+  // handleLog: NEVER set component state inside the setProfile updater to avoid stale closure bugs.
+  const handleLog = useCallback((type, positive, xpGain, photoHash, callback) => {
+    const now = new Date().toISOString().split('T')[0];
+    const actionId = uuid();
+    let resultProfile;
+
+    setProfile(prev => {
+      const s = {...prev.stats};
+      let debt = prev.carbonDebt;
+      if (positive) { s[type] = Math.min(100, s[type]+(type==='agility'?8:type==='wealth'?6:10)); debt = Math.max(0,debt-5); }
+      else           { s[type] = Math.max(0, s[type]-12); debt = Math.min(100,debt+10); }
+
+      let streak = prev.streak;
+      if (prev.lastLogDate !== now) {
+        const diff = prev.lastLogDate ? Math.floor((new Date(now)-new Date(prev.lastLogDate))/86400000) : 999;
+        streak = diff===1 ? streak+1 : 1;
+      }
+
+      const newXP = positive ? prev.xp + xpGain : prev.xp;
+      const log = loadLog();
+      const witnessed = log.filter(a=>a.witnessed).length;
+      const trustTier = (witnessed/(log.length+1))>0.5?'high':witnessed>0?'peer':'self';
+      const np = {...prev, stats:s, xp:newXP, lastLogDate:now, streak, carbonDebt:debt, trustTier, level:getLvl(newXP)};
+      saveProfile(np);
+      saveLog([{id:actionId, timestamp:new Date().toISOString(), type, value:s[type], witnessed:false, photoHash},...log.slice(0,49)]);
+      resultProfile = np;
+      return np;
+    });
+
+    setEcoKey(k=>k+1);
+    setTimeout(()=>callback({ xpGained:xpGain, actionId }), 0);
+  }, []);
+
+  // Called when THIS user witnesses someone else's QR scan
+  const handleWitness = useCallback((karmaGain, scanned) => {
+    setProfile(prev=>{ const np={...prev, karma:prev.karma+karmaGain}; saveProfile(np); return np; });
+    showToastMsg(`+${karmaGain} Karma for witnessing @${scanned?.username}! 👀`,'✨');
+  }, [showToastMsg]);
+
+  return (
+    <div className="app-shell">
+      <Header profile={profile} onScan={()=>setShowScan(true)}/>
+      {tab==='home'        && <HomeScreen profile={profile} animKey={ecoKey} onTale={()=>setShowTale(true)}/>}
+      {tab==='log'         && <LogScreen  profile={profile} onLog={handleLog}/>}
+      {tab==='leaderboard' && <LeaderboardScreen profile={profile}/>}
+      <div className="bottom-nav">
+        {[{id:'home',icon:'🏠',label:'Sanctuary'},{id:'log',icon:'📝',label:'Log'},{id:'leaderboard',icon:'🏆',label:'Rankings'}].map(t=>(
+          <button key={t.id} className={`nav-btn${tab===t.id?' active':''}`} onClick={()=>setTab(t.id)}>
+            <span>{t.icon}</span><span>{t.label}</span>
+          </button>
+        ))}
+      </div>
+      {toast    && <Toast msg={toast.msg} icon={toast.icon}/>}
+      {showTale && <TaleModal profile={profile} onClose={()=>setShowTale(false)}/>}
+      {showScan && <ScanModal onClose={()=>setShowScan(false)} onWitness={handleWitness}/>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
